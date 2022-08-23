@@ -1,7 +1,10 @@
-trait Random {
+pub trait Random {
     fn gen(&mut self) -> u32;
     fn gen_u8(&mut self) -> u8 {
         (self.gen() & 0xff) as u8
+    }
+    fn gen_max(&mut self, max: u32) -> u32 {
+        ((self.gen() as f64) * (max as f64 + 1.0) / (1.0 + u32::MAX as f64)) as u32
     }
 }
 

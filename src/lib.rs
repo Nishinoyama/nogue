@@ -1,2 +1,2 @@
-mod dungeon;
-mod random;
+pub mod dungeon;
+pub mod random;
