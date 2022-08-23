@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display, Formatter, write};
+use std::fmt::{Debug, Display, Formatter};
 
 const FIELD_SIZE_ROW: usize = 41;
 const FIELD_SIZE_COLUMN: usize = 63;
@@ -24,9 +24,7 @@ impl<T: FieldPointDefault + Copy> Default for Field<T> {
             points[i][0] = T::default_edge();
             points[i][FIELD_SIZE_COLUMN - 1] = T::default_edge();
         }
-        Self {
-            points
-        }
+        Self { points }
     }
 }
 
@@ -80,25 +78,26 @@ impl Default for Dungeon {
             individuals: Field::default(),
             items: Field::default(),
             floors: Field::default(),
-            visible: Field::default()
+            visible: Field::default(),
         }
     }
 }
 
-
 impl Display for Dungeon {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let mut s = self.floors.points.map(|x|
-            x.map(|t|  format!("{}", t)).join("")
-        ).join("\n");
+        let s = self
+            .floors
+            .points
+            .map(|x| x.map(|t| format!("{}", t)).join(""))
+            .join("\n");
         write!(f, "{}", s)
     }
 }
 
 #[cfg(test)]
 mod test {
-    use std::mem::size_of;
     use crate::dungeon::{Dungeon, Field};
+    use std::mem::size_of;
 
     #[test]
     fn test() {
