@@ -1,9 +1,9 @@
 use crate::random::Random;
 use std::fmt::{Debug, Display, Formatter};
 
-pub const FIELD_SIZE_ROW: usize = 41;
-pub const FIELD_SIZE_COLUMN: usize = 63;
-const AREA_SIZE_MIN: usize = 4;
+pub const FIELD_ROW_SIZE: usize = 41;
+pub const FIELD_COLUMN_SIZE: usize = 63;
+pub const FIELD_CHIPS: usize = FIELD_ROW_SIZE * FIELD_COLUMN_SIZE;
 
 #[derive(Debug, Copy, Clone)]
 enum Floor {
@@ -51,32 +51,10 @@ struct Field<T> {
     points: [[T; FIELD_SIZE_COLUMN]; FIELD_SIZE_ROW],
 }
 
-#[derive(Copy, Clone)]
-enum FieldFloorArea {
-    Room { row: usize, column: usize },
-    PathWay { relay_x: usize, relay_y: usize },
-    WallFilled,
-    None,
-}
-
-impl FieldFloorArea {
-    fn gen<R: Random>(rnd: &mut R, max_rows: usize, max_columns: usize) -> Self {
-        if rnd.gen_u8() >= 16 {
-            let relay_x = (rnd.gen() as usize) % max_rows;
-            let relay_y = (rnd.gen() as usize) % max_columns;
-            Self::PathWay { relay_x, relay_y }
-        } else {
-            let row = AREA_SIZE_MIN + (rnd.gen() as usize) % (max_rows - AREA_SIZE_MIN);
-            let column = AREA_SIZE_MIN + (rnd.gen() as usize) % (max_columns - AREA_SIZE_MIN);
-            Self::Room { row, column }
-        }
-    }
-}
-
 impl Field<Floor> {
     fn gen_field_tree_dip<R: Random>(rnd: &mut R, rows: usize, columns: usize) -> Self {
-        assert!(FIELD_SIZE_ROW / rows >= 10);
-        assert!(FIELD_SIZE_COLUMN / columns >= 10);
+        assert!(FIELD_ROW_SIZE / rows >= 10);
+        assert!(FIELD_COLUMN_SIZE / columns >= 10);
         assert!(rows * columns <= 24);
         //
         // ###
@@ -89,8 +67,8 @@ impl Field<Floor> {
             for j in 0..columns {
                 areas[i * columns + j] = FieldFloorArea::gen(
                     rnd,
-                    FIELD_SIZE_ROW / rows - 1,
-                    FIELD_SIZE_COLUMN / columns - 1,
+                    FIELD_ROW_SIZE / rows - 1,
+                    FIELD_COLUMN_SIZE / columns - 1,
                 );
                 if matches!(areas[i * columns + j], FieldFloorArea::Room { .. }) {
                     room_cnt += 1;
@@ -101,24 +79,48 @@ impl Field<Floor> {
             return Self::gen_field_tree_dip(rnd, rows, columns);
         }
 
-        let mut areas_seen = [false; 24];
-        let mut areas_queue = [24usize; 24];
-        let mut queue_i = 0;
-        let mut ti = rnd.gen_max((rows * columns) as u32);
-        /// todo 木チックに経路を生成する。
+        let mut areas_groups = [0usize; 24];
+        for i in 0..(rows*columns) {
+            areas_groups[i] = i+1
+        }
+        // todo 木チックに経路を生成する。
+        loop {
+            let vertical = rnd.gen_max(2) == 1;
+            let si = rnd.gen_max((rows * columns) as u32) as usize;
+            let ti = if vertical {
+                if si + columns >= rows * columns {
+                    continue;
+                }
+                si + columns
+            } else {
+                if (si + 1) % columns == 0 {
+                    continue;
+                }
+                si + 1
+            };
+            if areas_groups[si] == areas_groups[ti] {
+                continue;
+            }
+            let overwrite_group = areas_groups[ti];
+            for i in 0..(rows*columns) {
+                if areas_groups[i] == overwrite_group {
+                    areas_groups[i] = areas_groups[si];
+                }
+            }
+        }
     }
 }
 
 impl<T: FieldPointDefault + Copy> Default for Field<T> {
     fn default() -> Field<T> {
-        let mut points = [[T::default_inter(); FIELD_SIZE_COLUMN]; FIELD_SIZE_ROW];
-        for i in 0..FIELD_SIZE_COLUMN {
+        let mut points = [[T::default_inter(); FIELD_COLUMN_SIZE]; FIELD_ROW_SIZE];
+        for i in 0..FIELD_COLUMN_SIZE {
             points[0][i] = T::default_edge();
-            points[FIELD_SIZE_ROW - 1][i] = T::default_edge();
+            points[FIELD_ROW_SIZE - 1][i] = T::default_edge();
         }
-        for i in 0..FIELD_SIZE_ROW {
+        for i in 0..FIELD_ROW_SIZE {
             points[i][0] = T::default_edge();
-            points[i][FIELD_SIZE_COLUMN - 1] = T::default_edge();
+            points[i][FIELD_COLUMN_SIZE - 1] = T::default_edge();
         }
         Self { points }
     }
