@@ -24,10 +24,22 @@ impl Add<Direction> for Point {
     fn add(self, rhs: Direction) -> Self::Output {
         use Direction::*;
         match rhs {
-            Down => Point { x: self.x + Wrapping(1), y: self.y },
-            Right => Point { x: self.x, y: self.y + Wrapping(1) },
-            Up => Point { x: self.x - Wrapping(1), y: self.y },
-            Left => Point { x: self.x, y: self.y - Wrapping(1) },
+            Down => Point {
+                x: self.x + Wrapping(1),
+                y: self.y,
+            },
+            Right => Point {
+                x: self.x,
+                y: self.y + Wrapping(1),
+            },
+            Up => Point {
+                x: self.x - Wrapping(1),
+                y: self.y,
+            },
+            Left => Point {
+                x: self.x,
+                y: self.y - Wrapping(1),
+            },
             UpLeft => self + Up + Left,
             UpRight => self + Up + Right,
             DownLeft => self + Down + Left,
@@ -100,14 +112,18 @@ impl Add for Direction {
 
 #[cfg(test)]
 mod test {
-    use core::ops::Add;
     use crate::grid::Direction::*;
     use crate::grid::Point;
+    use core::ops::Add;
 
     #[test]
     fn test() {
-        let x = [Down; 20].into_iter().fold(Point::from((0, 10)), Point::add);
-        let y = [Right; 20].into_iter().fold(Point::from((100, 20)), Point::add);
+        let x = [Down; 20]
+            .into_iter()
+            .fold(Point::from((0, 10)), Point::add);
+        let y = [Right; 20]
+            .into_iter()
+            .fold(Point::from((100, 20)), Point::add);
         assert_eq!(x, Point::from((20, 10)));
         assert_eq!(y, Point::from((100, 40)));
         assert_eq!(x + y, Point::from((120, 50)));

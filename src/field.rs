@@ -24,16 +24,10 @@ impl<T: Default> Field<T> {
         }
     }
     fn iter<'a>(&self) -> FieldIter<'_, T> {
-        FieldIter {
-            i: 0,
-            field: &self,
-        }
+        FieldIter { i: 0, field: &self }
     }
     fn iter_mut(&mut self) -> FieldIterMut<'_, T> {
-        FieldIterMut {
-            i: 0,
-            field: self,
-        }
+        FieldIterMut { i: 0, field: self }
     }
 }
 
@@ -62,7 +56,6 @@ struct FieldIterMut<'a, T> {
     field: &'a mut Field<T>,
 }
 
-
 impl<'a, T> Iterator for FieldIterMut<'a, T> {
     type Item = &'a mut T;
 
@@ -73,7 +66,11 @@ impl<'a, T> Iterator for FieldIterMut<'a, T> {
         } else {
             self.i += 1;
             unsafe {
-                Some(&mut *self.field.0[i / FIELD_COLUMN_SIZE].as_mut_ptr().add(i % FIELD_COLUMN_SIZE))
+                Some(
+                    &mut *self.field.0[i / FIELD_COLUMN_SIZE]
+                        .as_mut_ptr()
+                        .add(i % FIELD_COLUMN_SIZE),
+                )
             }
         }
     }
@@ -94,6 +91,9 @@ mod test {
     fn set_test() {
         let mut x = Field::default();
         x.set(2, 3, 64usize);
-        assert_eq!(x.iter().position(|t| t.eq(&64)), Some(&2*FIELD_COLUMN_SIZE + 3))
+        assert_eq!(
+            x.iter().position(|t| t.eq(&64)),
+            Some(&2 * FIELD_COLUMN_SIZE + 3)
+        )
     }
 }
