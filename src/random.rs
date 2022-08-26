@@ -41,6 +41,6 @@ mod test {
         for _ in 0..mean * 256 {
             cnt[t.gen_u8() as usize] += 1;
         }
-        assert_eq!(cnt, [10000; 256])
+        assert!(cnt.into_iter().all(|t| mean * 9 / 10 <= t && t <= mean * 11 / 10))
     }
 }
