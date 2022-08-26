@@ -3,8 +3,8 @@ use core::ops::{Add, Neg, Sub};
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub struct Point {
-    x: Wrapping<usize>,
-    y: Wrapping<usize>,
+    x: Wrapping<u8>,
+    y: Wrapping<u8>,
 }
 
 impl Add for Point {
@@ -55,8 +55,8 @@ impl Sub<Direction> for Point {
     }
 }
 
-impl From<(usize, usize)> for Point {
-    fn from((x, y): (usize, usize)) -> Self {
+impl From<(u8, u8)> for Point {
+    fn from((x, y): (u8, u8)) -> Self {
         let (x, y) = (Wrapping(x), Wrapping(y));
         Point { x, y }
     }
