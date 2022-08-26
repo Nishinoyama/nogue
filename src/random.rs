@@ -41,8 +41,6 @@ mod test {
         for _ in 0..mean * 256 {
             cnt[t.gen_u8() as usize] += 1;
         }
-        for (i, &c) in cnt.iter().enumerate() {
-            println!("{:3} -> {:5}({})", i, c, (c as f64) / (mean as f64));
-        }
+        assert_eq!(cnt, [10000; 256])
     }
 }
